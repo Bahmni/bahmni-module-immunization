@@ -1,6 +1,7 @@
 package org.bahmni.module.immunization.api.service.impl;
 
 import ca.uhn.fhir.rest.api.server.IBundleProvider;
+import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
 import lombok.Getter;
 import org.bahmni.module.immunization.api.dao.BahmniFhirImmunizationDao;
 import org.bahmni.module.immunization.api.model.FhirImmunization;
@@ -41,7 +42,7 @@ public class BahmniFhirImmunizationServiceImpl extends BaseFhirService<Immunizat
 	@Transactional(readOnly = true)
 	public IBundleProvider searchImmunizations(BahmniImmunizationSearchParams searchParams) {
 		if (!searchParams.hasPatientReference() && !searchParams.hasId()) {
-			throw new UnsupportedOperationException(
+			throw new InvalidRequestException(
 					"You must specify patient reference or resource _id!");
 		}
 		return searchQuery.getQueryResults(searchParams.toSearchParameterMap(), dao, translator, searchQueryInclude);

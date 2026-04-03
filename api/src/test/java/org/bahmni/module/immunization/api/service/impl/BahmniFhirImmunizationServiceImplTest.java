@@ -8,6 +8,7 @@ import ca.uhn.fhir.rest.param.ReferenceParam;
 import ca.uhn.fhir.rest.param.TokenAndListParam;
 import ca.uhn.fhir.rest.param.TokenOrListParam;
 import ca.uhn.fhir.rest.param.TokenParam;
+import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
 import org.bahmni.module.immunization.api.dao.BahmniFhirImmunizationDao;
 import org.bahmni.module.immunization.api.model.FhirImmunization;
 import org.bahmni.module.immunization.api.model.FhirImmunizationStatus;
@@ -166,7 +167,7 @@ public class BahmniFhirImmunizationServiceImplTest {
 		assertNotNull(actualMap.getParameters(FhirConstants.PATIENT_REFERENCE_SEARCH_HANDLER));
 	}
 
-	@Test(expected = UnsupportedOperationException.class)
+	@Test(expected = InvalidRequestException.class)
 	public void searchImmunizations_shouldThrowExceptionWhenNoRequiredParams() {
 		BahmniImmunizationSearchParams searchParams = new BahmniImmunizationSearchParams(
 				null, null, null, null, null, null, null);

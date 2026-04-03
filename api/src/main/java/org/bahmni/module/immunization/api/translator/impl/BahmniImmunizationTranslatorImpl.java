@@ -30,7 +30,6 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import java.math.BigDecimal;
-import java.util.HashSet;
 
 import static org.bahmni.module.immunization.ImmunizationModuleConstants.FHIR_EXT_IMMUNIZATION_ADMINISTERED_PRODUCT;
 import static org.bahmni.module.immunization.ImmunizationModuleConstants.FHIR_EXT_IMMUNIZATION_BASED_ON;
@@ -349,7 +348,7 @@ public class BahmniImmunizationTranslatorImpl implements BahmniImmunizationTrans
 		if (!resource.hasPerformer()) {
 			return;
 		}
-		existing.setPerformers(new HashSet<>());
+		existing.getPerformers().clear();
 		for (Immunization.ImmunizationPerformerComponent fhirPerformer : resource.getPerformer()) {
 			ImmunizationPerformer performer = new ImmunizationPerformer();
 			performer.setImmunization(existing);
@@ -370,7 +369,7 @@ public class BahmniImmunizationTranslatorImpl implements BahmniImmunizationTrans
 		if (!resource.hasNote()) {
 			return;
 		}
-		existing.setNotes(new HashSet<>());
+		existing.getNotes().clear();
 		for (Annotation fhirAnnotation : resource.getNote()) {
 			ImmunizationNote note = new ImmunizationNote();
 			note.setImmunization(existing);
