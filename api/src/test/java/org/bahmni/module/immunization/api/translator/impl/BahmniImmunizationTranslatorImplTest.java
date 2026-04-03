@@ -298,14 +298,25 @@ public class BahmniImmunizationTranslatorImplTest {
 	}
 
 	@Test
-	public void toFhirResource_shouldTranslateDoseSequence() {
+	public void toFhirResource_shouldTranslateDoseNumberAsPositiveIntWhenNumeric() {
 		FhirImmunization entity = createBasicImmunization();
-		entity.setDoseSequence(3);
+		entity.setDoseNumber("3");
 
 		Immunization result = translator.toFhirResource(entity);
 
 		assertFalse(result.getProtocolApplied().isEmpty());
 		assertEquals(3, result.getProtocolApplied().get(0).getDoseNumberPositiveIntType().getValue().intValue());
+	}
+
+	@Test
+	public void toFhirResource_shouldTranslateDoseNumberAsStringWhenNonNumeric() {
+		FhirImmunization entity = createBasicImmunization();
+		entity.setDoseNumber("Booster");
+
+		Immunization result = translator.toFhirResource(entity);
+
+		assertFalse(result.getProtocolApplied().isEmpty());
+		assertEquals("Booster", result.getProtocolApplied().get(0).getDoseNumberStringType().getValue());
 	}
 
 	@Test
@@ -620,14 +631,30 @@ public class BahmniImmunizationTranslatorImplTest {
 	}
 
 	@Test
-	public void toOpenmrsType_shouldTranslateDoseSequence() throws IOException {
+	public void toOpenmrsType_shouldTranslateDoseNumberPositiveInt() throws IOException {
 		Immunization resource = (Immunization) TestDataFactory.loadResourceFromFile("example-immunization-administered.json");
 
 		setupMocksForAdministeredResource();
 
 		FhirImmunization result = translator.toOpenmrsType(resource);
 
-		assertEquals(Integer.valueOf(3), result.getDoseSequence());
+		assertEquals("3", result.getDoseNumber());
+	}
+
+	@Test
+	public void toOpenmrsType_shouldTranslateDoseNumberString() {
+		Immunization resource = new Immunization();
+		resource.setStatus(Immunization.ImmunizationStatus.COMPLETED);
+		resource.setPatient(new Reference("Patient/" + PATIENT_UUID));
+		Immunization.ImmunizationProtocolAppliedComponent protocol = new Immunization.ImmunizationProtocolAppliedComponent();
+		protocol.setDoseNumber(new org.hl7.fhir.r4.model.StringType("Booster"));
+		resource.addProtocolApplied(protocol);
+
+		setupMocksForAdministeredResource();
+
+		FhirImmunization result = translator.toOpenmrsType(resource);
+
+		assertEquals("Booster", result.getDoseNumber());
 	}
 
 	@Test
