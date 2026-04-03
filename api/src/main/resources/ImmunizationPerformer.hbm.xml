@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping package="org.bahmni.module.immunization.api.model">
+
+    <class name="org.bahmni.module.immunization.api.model.ImmunizationPerformer" table="immunization_performer">
+        <id name="performerId" type="java.lang.Integer" column="performer_id">
+            <generator class="native">
+                <param name="sequence">immunization_performer_id_seq</param>
+            </generator>
+        </id>
+
+        <many-to-one name="immunization"
+                     class="org.bahmni.module.immunization.api.model.FhirImmunization"
+                     not-null="true" column="immunization_id"/>
+
+        <property name="function" type="java.lang.String"
+                  column="performer_function" length="10" not-null="true"/>
+
+        <many-to-one name="actor" class="org.openmrs.Provider"
+                     column="actor_id" not-null="true"/>
+    </class>
+
+</hibernate-mapping>

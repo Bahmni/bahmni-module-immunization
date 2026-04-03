@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+    <changeSet id="create_immunization_table_20260319" author="Mohan"
+               dbms="mysql,mariadb,postgresql">
+        <preConditions onFail="MARK_RAN" onError="WARN">
+            <not>
+                <tableExists tableName="immunization"/>
+            </not>
+        </preConditions>
+        <createTable tableName="immunization">
+            <column name="immunization_id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="status" type="varchar(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status_reason" type="int"/>
+            <column name="vaccine_code" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="drug_id" type="int"/>
+            <column name="patient_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="encounter_id" type="int"/>
+            <column name="administered_on" type="datetime"/>
+            <column name="primary_source" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="location_id" type="int"/>
+            <column name="manufacturer" type="varchar(255)"/>
+            <column name="batch_number" type="varchar(100)"/>
+            <column name="expiration_date" type="datetime"/>
+            <column name="is_subpotent" type="boolean"/>
+            <column name="subpotent_reason" type="int"/>
+            <column name="site" type="int"/>
+            <column name="route" type="int"/>
+            <column name="dose_quantity" type="double"/>
+            <column name="dose_unit" type="int"/>
+            <column name="dose_number" type="varchar(50)"/>
+            <column name="creator" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_created" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="changed_by" type="int"/>
+            <column name="date_changed" type="datetime"/>
+            <column name="voided" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="voided_by" type="int"/>
+            <column name="date_voided" type="datetime"/>
+            <column name="void_reason" type="varchar(255)"/>
+            <column name="uuid" type="char(38)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="immunization_vaccine_code_fk"
+                                 baseTableName="immunization" baseColumnNames="vaccine_code"
+                                 referencedTableName="concept" referencedColumnNames="concept_id"/>
+        <addForeignKeyConstraint constraintName="immunization_status_reason_fk"
+                                 baseTableName="immunization" baseColumnNames="status_reason"
+                                 referencedTableName="concept" referencedColumnNames="concept_id"/>
+        <addForeignKeyConstraint constraintName="immunization_drug_fk"
+                                 baseTableName="immunization" baseColumnNames="drug_id"
+                                 referencedTableName="drug" referencedColumnNames="drug_id"/>
+        <addForeignKeyConstraint constraintName="immunization_patient_fk"
+                                 baseTableName="immunization" baseColumnNames="patient_id"
+                                 referencedTableName="patient" referencedColumnNames="patient_id"/>
+        <addForeignKeyConstraint constraintName="immunization_encounter_fk"
+                                 baseTableName="immunization" baseColumnNames="encounter_id"
+                                 referencedTableName="encounter" referencedColumnNames="encounter_id"/>
+        <addForeignKeyConstraint constraintName="immunization_location_fk"
+                                 baseTableName="immunization" baseColumnNames="location_id"
+                                 referencedTableName="location" referencedColumnNames="location_id"/>
+        <addForeignKeyConstraint constraintName="immunization_subpotent_reason_fk"
+                                 baseTableName="immunization" baseColumnNames="subpotent_reason"
+                                 referencedTableName="concept" referencedColumnNames="concept_id"/>
+        <addForeignKeyConstraint constraintName="immunization_site_fk"
+                                 baseTableName="immunization" baseColumnNames="site"
+                                 referencedTableName="concept" referencedColumnNames="concept_id"/>
+        <addForeignKeyConstraint constraintName="immunization_route_fk"
+                                 baseTableName="immunization" baseColumnNames="route"
+                                 referencedTableName="concept" referencedColumnNames="concept_id"/>
+        <addForeignKeyConstraint constraintName="immunization_dose_unit_concept_fk"
+                                 baseTableName="immunization" baseColumnNames="dose_unit"
+                                 referencedTableName="concept" referencedColumnNames="concept_id"/>
+        <addForeignKeyConstraint constraintName="immunization_creator_fk"
+                                 baseTableName="immunization" baseColumnNames="creator"
+                                 referencedTableName="users" referencedColumnNames="user_id"/>
+        <addForeignKeyConstraint constraintName="immunization_changed_by_fk"
+                                 baseTableName="immunization" baseColumnNames="changed_by"
+                                 referencedTableName="users" referencedColumnNames="user_id"/>
+        <addForeignKeyConstraint constraintName="immunization_voided_by_fk"
+                                 baseTableName="immunization" baseColumnNames="voided_by"
+                                 referencedTableName="users" referencedColumnNames="user_id"/>
+    </changeSet>
+
+    <changeSet id="add_non_coded_fields_to_immunization_20260322" author="Mohan"
+               dbms="mysql,mariadb,postgresql">
+        <preConditions onFail="MARK_RAN" onError="WARN">
+            <tableExists tableName="immunization"/>
+            <not>
+                <columnExists tableName="immunization" columnName="drug_non_coded"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="immunization">
+            <column name="drug_non_coded" type="varchar(255)"/>
+            <column name="location_text" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="create_immunization_performer_table_20260319" author="Mohan"
+               dbms="mysql,mariadb,postgresql">
+        <preConditions onFail="MARK_RAN" onError="WARN">
+            <not>
+                <tableExists tableName="immunization_performer"/>
+            </not>
+        </preConditions>
+        <createTable tableName="immunization_performer">
+            <column name="performer_id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="immunization_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="performer_function" type="varchar(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="actor_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="imm_performer_immunization_fk"
+                                 baseTableName="immunization_performer" baseColumnNames="immunization_id"
+                                 referencedTableName="immunization" referencedColumnNames="immunization_id"/>
+        <addForeignKeyConstraint constraintName="imm_performer_actor_fk"
+                                 baseTableName="immunization_performer" baseColumnNames="actor_id"
+                                 referencedTableName="provider" referencedColumnNames="provider_id"/>
+    </changeSet>
+
+    <changeSet id="create_immunization_notes_table_20260319" author="Mohan"
+               dbms="mysql,mariadb,postgresql">
+        <preConditions onFail="MARK_RAN" onError="WARN">
+            <not>
+                <tableExists tableName="immunization_notes"/>
+            </not>
+        </preConditions>
+        <createTable tableName="immunization_notes">
+            <column name="note_id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="immunization_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="author_id" type="int"/>
+            <column name="author_string" type="varchar(255)"/>
+            <column name="recorded_on" type="datetime"/>
+            <column name="text" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="creator" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_created" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="changed_by" type="int"/>
+            <column name="date_changed" type="datetime"/>
+            <column name="voided" type="boolean" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="voided_by" type="int"/>
+            <column name="date_voided" type="datetime"/>
+            <column name="void_reason" type="varchar(255)"/>
+            <column name="uuid" type="char(38)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="imm_note_immunization_fk"
+                                 baseTableName="immunization_notes" baseColumnNames="immunization_id"
+                                 referencedTableName="immunization" referencedColumnNames="immunization_id"/>
+        <addForeignKeyConstraint constraintName="imm_note_author_fk"
+                                 baseTableName="immunization_notes" baseColumnNames="author_id"
+                                 referencedTableName="provider" referencedColumnNames="provider_id"/>
+        <addForeignKeyConstraint constraintName="imm_note_creator_fk"
+                                 baseTableName="immunization_notes" baseColumnNames="creator"
+                                 referencedTableName="users" referencedColumnNames="user_id"/>
+        <addForeignKeyConstraint constraintName="imm_note_changed_by_fk"
+                                 baseTableName="immunization_notes" baseColumnNames="changed_by"
+                                 referencedTableName="users" referencedColumnNames="user_id"/>
+        <addForeignKeyConstraint constraintName="imm_note_voided_by_fk"
+                                 baseTableName="immunization_notes" baseColumnNames="voided_by"
+                                 referencedTableName="users" referencedColumnNames="user_id"/>
+    </changeSet>
+
+    <changeSet id="create_immunization_based_on_table_20260319" author="Mohan"
+               dbms="mysql,mariadb,postgresql">
+        <preConditions onFail="MARK_RAN" onError="WARN">
+            <not>
+                <tableExists tableName="immunization_based_on"/>
+            </not>
+        </preConditions>
+        <createTable tableName="immunization_based_on">
+            <column name="based_on_id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="immunization_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="order_id" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint constraintName="imm_based_on_immunization_fk"
+                                 baseTableName="immunization_based_on" baseColumnNames="immunization_id"
+                                 referencedTableName="immunization" referencedColumnNames="immunization_id"/>
+        <addForeignKeyConstraint constraintName="imm_based_on_order_fk"
+                                 baseTableName="immunization_based_on" baseColumnNames="order_id"
+                                 referencedTableName="orders" referencedColumnNames="order_id"/>
+    </changeSet>
+
+</databaseChangeLog>

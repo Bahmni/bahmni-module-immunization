@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<module configVersion="1.6">
+
+    <id>immunization</id>
+    <name>Immunization Module</name>
+    <version>@MODULE_VERSION@</version>
+    <package>org.bahmni.module.immunization</package>
+    <author>Bahmni</author>
+    <description>FHIR R4 Immunization resource for Bahmni</description>
+
+    <activator>org.bahmni.module.immunization.ImmunizationModuleActivator</activator>
+
+    <require_version>2.5.12</require_version>
+
+    <require_modules>
+        <require_module>org.openmrs.module.fhir2</require_module>
+    </require_modules>
+
+    <privilege>
+        <name>Get Immunizations</name>
+        <description>Allows user to view and search immunization resources</description>
+    </privilege>
+    <privilege>
+        <name>Add Immunizations</name>
+        <description>Allows user to create new immunization resources</description>
+    </privilege>
+    <privilege>
+        <name>Edit Immunizations</name>
+        <description>Allows user to edit existing immunization resources</description>
+    </privilege>
+    <privilege>
+        <name>Delete Immunizations</name>
+        <description>Allows user to delete existing immunization resources</description>
+    </privilege>
+
+    <mappingFiles>
+        Immunization.hbm.xml
+        ImmunizationPerformer.hbm.xml
+        ImmunizationNote.hbm.xml
+        ImmunizationBasedOn.hbm.xml
+    </mappingFiles>
+
+    <databaseChangelogFile>liquibase.xml</databaseChangelogFile>
+
+</module>
