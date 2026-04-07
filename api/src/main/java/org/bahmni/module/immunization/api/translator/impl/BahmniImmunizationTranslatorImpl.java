@@ -26,6 +26,7 @@ import org.openmrs.module.fhir2.api.translators.LocationReferenceTranslator;
 import org.openmrs.module.fhir2.api.translators.PatientReferenceTranslator;
 import org.openmrs.module.fhir2.api.translators.PractitionerReferenceTranslator;
 import org.openmrs.module.fhir2.api.translators.impl.MedicationQuantityCodingTranslatorImpl;
+import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
@@ -303,9 +304,10 @@ public class BahmniImmunizationTranslatorImpl implements BahmniImmunizationTrans
 			if (ref != null && ref.startsWith(MEDICATION_REFERENCE_PREFIX)) {
 				String drugUuid = ref.substring(MEDICATION_REFERENCE_PREFIX.length());
 				Drug drug = conceptService.getDrugByUuid(drugUuid);
-				if (drug != null) {
-					existing.setDrug(drug);
+				if (drug == null) {
+					throw new InvalidRequestException("Could not find drug with UUID: " + drugUuid);
 				}
+				existing.setDrug(drug);
 			} else if (drugRef.hasDisplay()) {
 				existing.setDrugNonCoded(drugRef.getDisplay());
 			}
@@ -320,12 +322,13 @@ public class BahmniImmunizationTranslatorImpl implements BahmniImmunizationTrans
 			if (ref != null && ref.startsWith(MEDICATION_REQUEST_REFERENCE_PREFIX)) {
 				String orderUuid = ref.substring(MEDICATION_REQUEST_REFERENCE_PREFIX.length());
 				Order order = orderService.getOrderByUuid(orderUuid);
-				if (order != null) {
-					ImmunizationBasedOn basedOn = new ImmunizationBasedOn();
-					basedOn.setImmunization(existing);
-					basedOn.setOrder(order);
-					existing.getBasedOnOrders().add(basedOn);
+				if (order == null) {
+					throw new InvalidRequestException("Could not find order with UUID: " + orderUuid);
 				}
+				ImmunizationBasedOn basedOn = new ImmunizationBasedOn();
+				basedOn.setImmunization(existing);
+				basedOn.setOrder(order);
+				existing.getBasedOnOrders().add(basedOn);
 			}
 		}
 	}

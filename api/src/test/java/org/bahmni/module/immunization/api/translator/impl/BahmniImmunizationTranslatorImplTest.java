@@ -27,11 +27,13 @@ import org.openmrs.module.fhir2.api.translators.PatientReferenceTranslator;
 import org.openmrs.module.fhir2.api.translators.PractitionerReferenceTranslator;
 import org.openmrs.module.fhir2.api.translators.impl.MedicationQuantityCodingTranslatorImpl;
 
+import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashSet;
 
 import static org.bahmni.module.immunization.ImmunizationModuleConstants.FHIR_EXT_IMMUNIZATION_ADMINISTERED_PRODUCT;
+import static org.bahmni.module.immunization.ImmunizationModuleConstants.FHIR_EXT_IMMUNIZATION_BASED_ON;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -847,6 +849,46 @@ public class BahmniImmunizationTranslatorImplTest {
 		assertEquals("Medsource", result.getManufacturer());
 	}
 
+	@Test(expected = InvalidRequestException.class)
+	public void toOpenmrsType_shouldThrowWhenDrugUuidNotFoundInDatabase() {
+		Immunization resource = new Immunization();
+		resource.setStatus(Immunization.ImmunizationStatus.COMPLETED);
+		resource.addExtension(FHIR_EXT_IMMUNIZATION_ADMINISTERED_PRODUCT,
+				new Reference("Medication/" + DRUG_UUID));
+
+		setupMocksForAdministeredResource();
+		when(conceptService.getDrugByUuid(DRUG_UUID)).thenReturn(null);
+
+		translator.toOpenmrsType(resource);
+	}
+
+	@Test(expected = InvalidRequestException.class)
+	public void toOpenmrsType_shouldThrowWhenOrderUuidNotFoundInDatabase() {
+		String orderUuid = "order-uuid-not-in-db";
+		Immunization resource = new Immunization();
+		resource.setStatus(Immunization.ImmunizationStatus.COMPLETED);
+		resource.addExtension(FHIR_EXT_IMMUNIZATION_BASED_ON,
+				new Reference("MedicationRequest/" + orderUuid));
+
+		setupMocksForAdministeredResource();
+		when(orderService.getOrderByUuid(orderUuid)).thenReturn(null);
+
+		translator.toOpenmrsType(resource);
+	}
+
+	@Test
+	public void toFhirResource_shouldTranslateDoseQuantityWithoutUnit() {
+		FhirImmunization entity = createBasicImmunization();
+		entity.setDoseQuantity(1.0);
+		// doseUnit intentionally left null — dose quantity still serialised, just without unit coding
+
+		Immunization result = translator.toFhirResource(entity);
+
+		assertNotNull(result.getDoseQuantity());
+		assertEquals(1.0, result.getDoseQuantity().getValue().doubleValue(), 0.001);
+		assertNull(result.getDoseQuantity().getSystem());
+	}
+
 	// ========== Helpers ==========
 
 	private FhirImmunization createBasicImmunization() {
@@ -871,6 +913,9 @@ public class BahmniImmunizationTranslatorImplTest {
 
 		Location location = TestDataFactory.exampleLocation("IOM MHAC Nairobi", LOCATION_UUID);
 		when(locationReferenceTranslator.toOpenmrsType(any(Reference.class))).thenReturn(location);
+
+		Drug drug = TestDataFactory.exampleDrug("MisoPrime", DRUG_UUID);
+		when(conceptService.getDrugByUuid(DRUG_UUID)).thenReturn(drug);
 	}
 
 	private void setupMocksForWaiverResource() {
