@@ -41,6 +41,8 @@ public class BahmniImmunizationTranslatorImpl implements BahmniImmunizationTrans
 	private static final String PERFORMER_FUNCTION_SYSTEM = "http://terminology.hl7.org/CodeSystem/v2-0443";
 	private static final String PERFORMER_FUNCTION_AP = "AP";
 	private static final String PERFORMER_FUNCTION_OP = "OP";
+	private static final String MEDICATION_REFERENCE_PREFIX = "Medication/";
+	private static final String MEDICATION_REQUEST_REFERENCE_PREFIX = "MedicationRequest/";
 
 	private final PatientReferenceTranslator patientReferenceTranslator;
 	private final EncounterReferenceTranslator<Encounter> encounterReferenceTranslator;
@@ -87,13 +89,7 @@ public class BahmniImmunizationTranslatorImpl implements BahmniImmunizationTrans
 			immunization.setPrimarySource(entity.getPrimarySource());
 		}
 
-		if (entity.getLocation() != null) {
-			immunization.setLocation(locationReferenceTranslator.toFhirResource(entity.getLocation()));
-		} else if (entity.getLocationText() != null) {
-			Reference locationRef = new Reference();
-			locationRef.setDisplay(entity.getLocationText());
-			immunization.setLocation(locationRef);
-		}
+		translateLocationToFhir(entity, immunization);
 
 		if (entity.getManufacturer() != null) {
 			Reference mfr = new Reference();
@@ -111,30 +107,7 @@ public class BahmniImmunizationTranslatorImpl implements BahmniImmunizationTrans
 			immunization.setRoute(conceptTranslator.toFhirResource(entity.getRoute()));
 		}
 
-		if (entity.getDoseQuantity() != null) {
-			SimpleQuantity qty = new SimpleQuantity();
-			qty.setValue(BigDecimal.valueOf(entity.getDoseQuantity()));
-			if (entity.getDoseUnit() != null) {
-				Coding coding = quantityCodingTranslator.toFhirResource(entity.getDoseUnit());
-				if (coding != null) {
-					qty.setSystem(coding.getSystem());
-					qty.setCode(coding.getCode());
-					qty.setUnit(coding.getDisplay());
-				}
-			}
-			immunization.setDoseQuantity(qty);
-		}
-
-		if (entity.getDoseNumber() != null) {
-			Immunization.ImmunizationProtocolAppliedComponent protocol =
-					new Immunization.ImmunizationProtocolAppliedComponent();
-			try {
-				protocol.setDoseNumber(new org.hl7.fhir.r4.model.PositiveIntType(Integer.parseInt(entity.getDoseNumber())));
-			} catch (NumberFormatException e) {
-				protocol.setDoseNumber(new org.hl7.fhir.r4.model.StringType(entity.getDoseNumber()));
-			}
-			immunization.addProtocolApplied(protocol);
-		}
+		translateDoseToFhir(entity, immunization);
 
 		if (entity.getExpirationDate() != null) {
 			immunization.setExpirationDate(entity.getExpirationDate());
@@ -149,25 +122,8 @@ public class BahmniImmunizationTranslatorImpl implements BahmniImmunizationTrans
 
 		translatePerformersToFhir(entity, immunization);
 		translateNotesToFhir(entity, immunization);
-
-		if (entity.getDrug() != null) {
-			Reference drugRef = new Reference();
-			drugRef.setReference("Medication/" + entity.getDrug().getUuid());
-			drugRef.setDisplay(entity.getDrug().getName());
-			immunization.addExtension(FHIR_EXT_IMMUNIZATION_ADMINISTERED_PRODUCT, drugRef);
-		} else if (entity.getDrugNonCoded() != null) {
-			Reference drugRef = new Reference();
-			drugRef.setDisplay(entity.getDrugNonCoded());
-			immunization.addExtension(FHIR_EXT_IMMUNIZATION_ADMINISTERED_PRODUCT, drugRef);
-		}
-
-		for (ImmunizationBasedOn basedOn : entity.getBasedOnOrders()) {
-			if (basedOn.getOrder() != null) {
-				Reference orderRef = new Reference();
-				orderRef.setReference("MedicationRequest/" + basedOn.getOrder().getUuid());
-				immunization.addExtension(FHIR_EXT_IMMUNIZATION_BASED_ON, orderRef);
-			}
-		}
+		translateDrugExtensionToFhir(entity, immunization);
+		translateBasedOnToFhir(entity, immunization);
 
 		return immunization;
 	}
@@ -212,14 +168,7 @@ public class BahmniImmunizationTranslatorImpl implements BahmniImmunizationTrans
 			existing.setPrimarySource(resource.getPrimarySource());
 		}
 
-		if (resource.hasLocation()) {
-			Reference locationRef = resource.getLocation();
-			if (locationRef.hasReference()) {
-				existing.setLocation(locationReferenceTranslator.toOpenmrsType(locationRef));
-			} else if (locationRef.hasDisplay()) {
-				existing.setLocationText(locationRef.getDisplay());
-			}
-		}
+		translateLocationToOpenmrs(existing, resource);
 
 		if (resource.hasManufacturer() && resource.getManufacturer().hasDisplay()) {
 			existing.setManufacturer(resource.getManufacturer().getDisplay());
@@ -237,19 +186,7 @@ public class BahmniImmunizationTranslatorImpl implements BahmniImmunizationTrans
 			existing.setRoute(conceptTranslator.toOpenmrsType(resource.getRoute()));
 		}
 
-		if (resource.hasDoseQuantity()) {
-			existing.setDoseQuantity(resource.getDoseQuantity().getValue().doubleValue());
-			existing.setDoseUnit(quantityCodingTranslator.toOpenmrsType(resource.getDoseQuantity()));
-		}
-
-		if (resource.hasProtocolApplied()) {
-			Immunization.ImmunizationProtocolAppliedComponent protocol = resource.getProtocolAppliedFirstRep();
-			if (protocol.hasDoseNumberPositiveIntType()) {
-				existing.setDoseNumber(String.valueOf(protocol.getDoseNumberPositiveIntType().getValue()));
-			} else if (protocol.hasDoseNumberStringType()) {
-				existing.setDoseNumber(protocol.getDoseNumberStringType().getValue());
-			}
-		}
+		translateDoseToOpenmrs(existing, resource);
 
 		if (resource.hasExpirationDate()) {
 			existing.setExpirationDate(resource.getExpirationDate());
@@ -265,13 +202,106 @@ public class BahmniImmunizationTranslatorImpl implements BahmniImmunizationTrans
 
 		translatePerformersToOpenmrs(existing, resource);
 		translateNotesToOpenmrs(existing, resource);
+		translateDrugExtensionToDrug(existing, resource);
+		translateBasedOnToDrugOrder(existing, resource);
 
+		return existing;
+	}
+
+	private void translateLocationToFhir(FhirImmunization entity, Immunization immunization) {
+		if (entity.getLocation() != null) {
+			immunization.setLocation(locationReferenceTranslator.toFhirResource(entity.getLocation()));
+		} else if (entity.getLocationText() != null) {
+			Reference locationRef = new Reference();
+			locationRef.setDisplay(entity.getLocationText());
+			immunization.setLocation(locationRef);
+		}
+	}
+
+	private void translateDoseToFhir(FhirImmunization entity, Immunization immunization) {
+		if (entity.getDoseQuantity() != null) {
+			SimpleQuantity qty = new SimpleQuantity();
+			qty.setValue(BigDecimal.valueOf(entity.getDoseQuantity()));
+			if (entity.getDoseUnit() != null) {
+				Coding coding = quantityCodingTranslator.toFhirResource(entity.getDoseUnit());
+				if (coding != null) {
+					qty.setSystem(coding.getSystem());
+					qty.setCode(coding.getCode());
+					qty.setUnit(coding.getDisplay());
+				}
+			}
+			immunization.setDoseQuantity(qty);
+		}
+
+		if (entity.getDoseNumber() != null) {
+			Immunization.ImmunizationProtocolAppliedComponent protocol =
+					new Immunization.ImmunizationProtocolAppliedComponent();
+			try {
+				protocol.setDoseNumber(new org.hl7.fhir.r4.model.PositiveIntType(Integer.parseInt(entity.getDoseNumber())));
+			} catch (NumberFormatException e) {
+				protocol.setDoseNumber(new org.hl7.fhir.r4.model.StringType(entity.getDoseNumber()));
+			}
+			immunization.addProtocolApplied(protocol);
+		}
+	}
+
+	private void translateDrugExtensionToFhir(FhirImmunization entity, Immunization immunization) {
+		if (entity.getDrug() != null) {
+			Reference drugRef = new Reference();
+			drugRef.setReference(MEDICATION_REFERENCE_PREFIX + entity.getDrug().getUuid());
+			drugRef.setDisplay(entity.getDrug().getName());
+			immunization.addExtension(FHIR_EXT_IMMUNIZATION_ADMINISTERED_PRODUCT, drugRef);
+		} else if (entity.getDrugNonCoded() != null) {
+			Reference drugRef = new Reference();
+			drugRef.setDisplay(entity.getDrugNonCoded());
+			immunization.addExtension(FHIR_EXT_IMMUNIZATION_ADMINISTERED_PRODUCT, drugRef);
+		}
+	}
+
+	private void translateBasedOnToFhir(FhirImmunization entity, Immunization immunization) {
+		for (ImmunizationBasedOn basedOn : entity.getBasedOnOrders()) {
+			if (basedOn.getOrder() != null) {
+				Reference orderRef = new Reference();
+				orderRef.setReference(MEDICATION_REQUEST_REFERENCE_PREFIX + basedOn.getOrder().getUuid());
+				immunization.addExtension(FHIR_EXT_IMMUNIZATION_BASED_ON, orderRef);
+			}
+		}
+	}
+
+	private void translateLocationToOpenmrs(FhirImmunization existing, Immunization resource) {
+		if (resource.hasLocation()) {
+			Reference locationRef = resource.getLocation();
+			if (locationRef.hasReference()) {
+				existing.setLocation(locationReferenceTranslator.toOpenmrsType(locationRef));
+			} else if (locationRef.hasDisplay()) {
+				existing.setLocationText(locationRef.getDisplay());
+			}
+		}
+	}
+
+	private void translateDoseToOpenmrs(FhirImmunization existing, Immunization resource) {
+		if (resource.hasDoseQuantity()) {
+			existing.setDoseQuantity(resource.getDoseQuantity().getValue().doubleValue());
+			existing.setDoseUnit(quantityCodingTranslator.toOpenmrsType(resource.getDoseQuantity()));
+		}
+
+		if (resource.hasProtocolApplied()) {
+			Immunization.ImmunizationProtocolAppliedComponent protocol = resource.getProtocolAppliedFirstRep();
+			if (protocol.hasDoseNumberPositiveIntType()) {
+				existing.setDoseNumber(String.valueOf(protocol.getDoseNumberPositiveIntType().getValue()));
+			} else if (protocol.hasDoseNumberStringType()) {
+				existing.setDoseNumber(protocol.getDoseNumberStringType().getValue());
+			}
+		}
+	}
+
+	private void translateDrugExtensionToDrug(FhirImmunization existing, Immunization resource) {
 		Extension drugExt = resource.getExtensionByUrl(FHIR_EXT_IMMUNIZATION_ADMINISTERED_PRODUCT);
 		if (drugExt != null && drugExt.getValue() instanceof Reference) {
 			Reference drugRef = (Reference) drugExt.getValue();
 			String ref = drugRef.getReference();
-			if (ref != null && ref.startsWith("Medication/")) {
-				String drugUuid = ref.substring("Medication/".length());
+			if (ref != null && ref.startsWith(MEDICATION_REFERENCE_PREFIX)) {
+				String drugUuid = ref.substring(MEDICATION_REFERENCE_PREFIX.length());
 				Drug drug = conceptService.getDrugByUuid(drugUuid);
 				if (drug != null) {
 					existing.setDrug(drug);
@@ -280,13 +310,15 @@ public class BahmniImmunizationTranslatorImpl implements BahmniImmunizationTrans
 				existing.setDrugNonCoded(drugRef.getDisplay());
 			}
 		}
+	}
 
+	private void translateBasedOnToDrugOrder(FhirImmunization existing, Immunization resource) {
 		Extension orderExt = resource.getExtensionByUrl(FHIR_EXT_IMMUNIZATION_BASED_ON);
 		if (orderExt != null && orderExt.getValue() instanceof Reference) {
 			Reference orderRef = (Reference) orderExt.getValue();
 			String ref = orderRef.getReference();
-			if (ref != null && ref.startsWith("MedicationRequest/")) {
-				String orderUuid = ref.substring("MedicationRequest/".length());
+			if (ref != null && ref.startsWith(MEDICATION_REQUEST_REFERENCE_PREFIX)) {
+				String orderUuid = ref.substring(MEDICATION_REQUEST_REFERENCE_PREFIX.length());
 				Order order = orderService.getOrderByUuid(orderUuid);
 				if (order != null) {
 					ImmunizationBasedOn basedOn = new ImmunizationBasedOn();
@@ -296,8 +328,6 @@ public class BahmniImmunizationTranslatorImpl implements BahmniImmunizationTrans
 				}
 			}
 		}
-
-		return existing;
 	}
 
 	private void translatePerformersToFhir(FhirImmunization entity, Immunization immunization) {
