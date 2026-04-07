@@ -70,6 +70,13 @@
                         </goals>
                         <configuration>
                             <outputDirectory>${project.build.directory}/jacoco-reports</outputDirectory>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                    </limits>
+                                </rule>
+                            </rules>
                         </configuration>
                     </execution>
                 </executions>
