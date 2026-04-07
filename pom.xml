@@ -11,6 +11,33 @@
 
     <name>Bahmni Module Immunization</name>
     <description>FHIR R4 Immunization resource for Bahmni</description>
+    <url>https://github.com/Bahmni/bahmni-module-immunization</url>
+
+    <organization>
+        <name>Bahmni</name>
+        <url>https://bahmni.org</url>
+    </organization>
+
+    <licenses>
+        <license>
+            <name>MPL v2 with Healthcare Disclaimer</name>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Bahmni</name>
+            <organization>Bahmni</organization>
+            <organizationUrl>https://github.com/Bahmni</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git@github.com:Bahmni/bahmni-module-immunization.git</connection>
+        <developerConnection>scm:git:git@github.com:Bahmni/bahmni-module-immunization.git</developerConnection>
+        <url>https://github.com/Bahmni/bahmni-module-immunization</url>
+        <tag>HEAD</tag>
+    </scm>
 
     <modules>
         <module>api</module>
@@ -86,7 +113,86 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>0.7.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <publishingServerId>nexus-sonatype</publishingServerId>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>release-sign-artifacts</id>
+            <activation>
+                <property>
+                    <name>performRelease</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>3.2.1</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>3.2.0</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.6</version>
+                        <configuration>
+                            <!-- Prevent gpg from using pinentry programs -->
+                            <gpgArguments>
+                                <arg>--pinentry-mode</arg>
+                                <arg>loopback</arg>
+                            </gpgArguments>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>nexus-sonatype</id>
+            <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <repositories>
         <repository>
