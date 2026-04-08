@@ -104,7 +104,7 @@
     </changeSet>
 
     <changeSet id="add_non_coded_fields_to_immunization_20260322" author="Mohan"
-               dbms="mysql,mariadb,postgresql">
+               >
         <preConditions onFail="MARK_RAN" onError="WARN">
             <tableExists tableName="immunization"/>
             <not>
@@ -118,7 +118,7 @@
     </changeSet>
 
     <changeSet id="create_immunization_performer_table_20260319" author="Mohan"
-               dbms="mysql,mariadb,postgresql">
+               >
         <preConditions onFail="MARK_RAN" onError="WARN">
             <not>
                 <tableExists tableName="immunization_performer"/>
@@ -148,7 +148,7 @@
     </changeSet>
 
     <changeSet id="create_immunization_notes_table_20260319" author="Mohan"
-               dbms="mysql,mariadb,postgresql">
+               >
         <preConditions onFail="MARK_RAN" onError="WARN">
             <not>
                 <tableExists tableName="immunization_notes"/>
@@ -204,7 +204,7 @@
     </changeSet>
 
     <changeSet id="create_immunization_based_on_table_20260319" author="Mohan"
-               dbms="mysql,mariadb,postgresql">
+               >
         <preConditions onFail="MARK_RAN" onError="WARN">
             <not>
                 <tableExists tableName="immunization_based_on"/>
@@ -228,6 +228,18 @@
         <addForeignKeyConstraint constraintName="imm_based_on_order_fk"
                                  baseTableName="immunization_based_on" baseColumnNames="order_id"
                                  referencedTableName="orders" referencedColumnNames="order_id"/>
+    </changeSet>
+
+    <changeSet id="add_indexes_to_immunization_table_20260408" author="Mohan">
+        <preConditions onFail="MARK_RAN" onError="WARN">
+            <tableExists tableName="immunization"/>
+        </preConditions>
+        <createIndex indexName="immunization_administered_on_idx" tableName="immunization">
+            <column name="administered_on"/>
+        </createIndex>
+        <createIndex indexName="immunization_status_idx" tableName="immunization">
+            <column name="status"/>
+        </createIndex>
     </changeSet>
 
 </databaseChangeLog>
