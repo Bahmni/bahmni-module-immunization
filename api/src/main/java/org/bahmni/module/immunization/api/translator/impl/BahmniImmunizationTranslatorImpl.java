@@ -58,7 +58,7 @@ public class BahmniImmunizationTranslatorImpl implements BahmniImmunizationTrans
 	private final OrderService orderService;
 
 	@Override
-	public Immunization toFhirResource(@Nonnull FhirImmunization entity) {
+	public Immunization toFhirResource(FhirImmunization entity) {
 		if (entity == null) {
 			return null;
 		}
@@ -132,7 +132,7 @@ public class BahmniImmunizationTranslatorImpl implements BahmniImmunizationTrans
 	}
 
 	@Override
-	public FhirImmunization toOpenmrsType(@Nonnull Immunization resource) {
+	public FhirImmunization toOpenmrsType(Immunization resource) {
 		if (resource == null) {
 			return null;
 		}
@@ -140,7 +140,7 @@ public class BahmniImmunizationTranslatorImpl implements BahmniImmunizationTrans
 	}
 
 	@Override
-	public FhirImmunization toOpenmrsType(@Nonnull FhirImmunization existing, @Nonnull Immunization resource) {
+	public FhirImmunization toOpenmrsType(@Nonnull FhirImmunization existing, Immunization resource) {
 		if (resource == null) {
 			return existing;
 		}
