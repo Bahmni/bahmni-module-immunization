@@ -220,7 +220,7 @@ public class BahmniImmunizationTranslatorImplTest {
 	@Test
 	public void toFhirResource_shouldTranslateLocationReference() {
 		FhirImmunization entity = createBasicImmunization();
-		Location location = TestDataFactory.exampleLocation("IOM MHAC Nairobi", LOCATION_UUID);
+		Location location = TestDataFactory.exampleLocation("Test Location", LOCATION_UUID);
 		entity.setLocation(location);
 
 		Reference locationRef = new Reference("Location/" + LOCATION_UUID);
@@ -509,7 +509,7 @@ public class BahmniImmunizationTranslatorImplTest {
 	@Test
 	public void toFhirResource_shouldPreferLocationOverLocationText() {
 		FhirImmunization entity = createBasicImmunization();
-		Location location = TestDataFactory.exampleLocation("IOM MHAC Nairobi", LOCATION_UUID);
+		Location location = TestDataFactory.exampleLocation("Test Location", LOCATION_UUID);
 		entity.setLocation(location);
 		entity.setLocationText("Field Clinic B");
 
@@ -807,7 +807,7 @@ public class BahmniImmunizationTranslatorImplTest {
 		resource.setPatient(new Reference("Patient/" + PATIENT_UUID));
 		resource.setLocation(new Reference("Location/" + LOCATION_UUID));
 
-		Location location = TestDataFactory.exampleLocation("IOM MHAC Nairobi", LOCATION_UUID);
+		Location location = TestDataFactory.exampleLocation("Test Location", LOCATION_UUID);
 		setupMocksForAdministeredResource();
 		when(locationReferenceTranslator.toOpenmrsType(any(Reference.class))).thenReturn(location);
 
@@ -911,7 +911,7 @@ public class BahmniImmunizationTranslatorImplTest {
 		Encounter encounter = TestDataFactory.exampleEncounter(ENCOUNTER_UUID);
 		when(encounterReferenceTranslator.toOpenmrsType(any(Reference.class))).thenReturn(encounter);
 
-		Location location = TestDataFactory.exampleLocation("IOM MHAC Nairobi", LOCATION_UUID);
+		Location location = TestDataFactory.exampleLocation("Test Location", LOCATION_UUID);
 		when(locationReferenceTranslator.toOpenmrsType(any(Reference.class))).thenReturn(location);
 
 		Drug drug = TestDataFactory.exampleDrug("MisoPrime", DRUG_UUID);

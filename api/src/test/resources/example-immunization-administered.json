@@ -20,7 +20,7 @@
   "primarySource": true,
   "location": {
     "reference": "Location/location-uuid",
-    "display": "IOM MHAC Nairobi"
+    "display": "Test Location"
   },
   "manufacturer": {
     "display": "Medsource"
