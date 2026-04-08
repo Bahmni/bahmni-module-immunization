@@ -25,8 +25,9 @@ import org.openmrs.module.fhir2.api.translators.EncounterReferenceTranslator;
 import org.openmrs.module.fhir2.api.translators.LocationReferenceTranslator;
 import org.openmrs.module.fhir2.api.translators.PatientReferenceTranslator;
 import org.openmrs.module.fhir2.api.translators.PractitionerReferenceTranslator;
-import org.openmrs.module.fhir2.api.translators.impl.MedicationQuantityCodingTranslatorImpl;
+import org.openmrs.module.fhir2.api.translators.CodingTranslator;
 import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
@@ -50,7 +51,8 @@ public class BahmniImmunizationTranslatorImpl implements BahmniImmunizationTrans
 	private final LocationReferenceTranslator locationReferenceTranslator;
 	private final PractitionerReferenceTranslator<Provider> practitionerReferenceTranslator;
 	private final ConceptTranslator conceptTranslator;
-	private final MedicationQuantityCodingTranslatorImpl quantityCodingTranslator;
+	@Qualifier("medicationQuantityCodingTranslatorImpl")
+	private final CodingTranslator quantityCodingTranslator;
 	private final BahmniImmunizationStatusTranslator statusTranslator;
 	private final ConceptService conceptService;
 	private final OrderService orderService;
@@ -315,20 +317,26 @@ public class BahmniImmunizationTranslatorImpl implements BahmniImmunizationTrans
 	}
 
 	private void translateBasedOnToDrugOrder(FhirImmunization existing, Immunization resource) {
-		Extension orderExt = resource.getExtensionByUrl(FHIR_EXT_IMMUNIZATION_BASED_ON);
-		if (orderExt != null && orderExt.getValue() instanceof Reference) {
-			Reference orderRef = (Reference) orderExt.getValue();
-			String ref = orderRef.getReference();
-			if (ref != null && ref.startsWith(MEDICATION_REQUEST_REFERENCE_PREFIX)) {
-				String orderUuid = ref.substring(MEDICATION_REQUEST_REFERENCE_PREFIX.length());
-				Order order = orderService.getOrderByUuid(orderUuid);
-				if (order == null) {
-					throw new InvalidRequestException("Could not find order with UUID: " + orderUuid);
+		java.util.List<Extension> orderExtensions = resource.getExtensionsByUrl(FHIR_EXT_IMMUNIZATION_BASED_ON);
+		if (orderExtensions.isEmpty()) {
+			return;
+		}
+		existing.getBasedOnOrders().clear();
+		for (Extension orderExt : orderExtensions) {
+			if (orderExt.getValue() instanceof Reference) {
+				Reference orderRef = (Reference) orderExt.getValue();
+				String ref = orderRef.getReference();
+				if (ref != null && ref.startsWith(MEDICATION_REQUEST_REFERENCE_PREFIX)) {
+					String orderUuid = ref.substring(MEDICATION_REQUEST_REFERENCE_PREFIX.length());
+					Order order = orderService.getOrderByUuid(orderUuid);
+					if (order == null) {
+						throw new InvalidRequestException("Could not find order with UUID: " + orderUuid);
+					}
+					ImmunizationBasedOn basedOn = new ImmunizationBasedOn();
+					basedOn.setImmunization(existing);
+					basedOn.setOrder(order);
+					existing.getBasedOnOrders().add(basedOn);
 				}
-				ImmunizationBasedOn basedOn = new ImmunizationBasedOn();
-				basedOn.setImmunization(existing);
-				basedOn.setOrder(order);
-				existing.getBasedOnOrders().add(basedOn);
 			}
 		}
 	}
@@ -404,6 +412,9 @@ public class BahmniImmunizationTranslatorImpl implements BahmniImmunizationTrans
 		}
 		existing.getNotes().clear();
 		for (Annotation fhirAnnotation : resource.getNote()) {
+			if (!fhirAnnotation.hasText()) {
+				throw new InvalidRequestException("Immunization note must have text");
+			}
 			ImmunizationNote note = new ImmunizationNote();
 			note.setImmunization(existing);
 			note.setText(fhirAnnotation.getText());

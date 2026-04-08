@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nonnull;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -79,6 +80,18 @@ public class BahmniFhirImmunizationDaoImpl extends BaseFhirDao<FhirImmunization>
 				}
 				return Optional.empty();
 			}).ifPresent(criteria::add);
+		}
+	}
+
+	@Override
+	protected String paramToProp(@Nonnull String param) {
+		switch (param) {
+			case Immunization.SP_DATE:
+				return "administeredOn";
+			case Immunization.SP_STATUS:
+				return "status";
+			default:
+				return null;
 		}
 	}
 

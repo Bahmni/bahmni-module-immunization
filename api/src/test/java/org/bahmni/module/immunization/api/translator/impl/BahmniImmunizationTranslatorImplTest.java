@@ -3,6 +3,7 @@ package org.bahmni.module.immunization.api.translator.impl;
 import org.bahmni.module.immunization.api.TestDataFactory;
 import org.bahmni.module.immunization.api.model.FhirImmunization;
 import org.bahmni.module.immunization.api.model.FhirImmunizationStatus;
+import org.bahmni.module.immunization.api.model.ImmunizationBasedOn;
 import org.bahmni.module.immunization.api.model.ImmunizationNote;
 import org.bahmni.module.immunization.api.model.ImmunizationPerformer;
 import org.hl7.fhir.r4.model.Coding;
@@ -14,10 +15,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.hl7.fhir.r4.model.Annotation;
 import org.openmrs.Concept;
 import org.openmrs.Drug;
 import org.openmrs.Encounter;
 import org.openmrs.Location;
+import org.openmrs.Order;
 import org.openmrs.Patient;
 import org.openmrs.Provider;
 import org.openmrs.module.fhir2.api.translators.ConceptTranslator;
@@ -25,12 +28,13 @@ import org.openmrs.module.fhir2.api.translators.EncounterReferenceTranslator;
 import org.openmrs.module.fhir2.api.translators.LocationReferenceTranslator;
 import org.openmrs.module.fhir2.api.translators.PatientReferenceTranslator;
 import org.openmrs.module.fhir2.api.translators.PractitionerReferenceTranslator;
-import org.openmrs.module.fhir2.api.translators.impl.MedicationQuantityCodingTranslatorImpl;
+import org.openmrs.module.fhir2.api.translators.CodingTranslator;
 
 import ca.uhn.fhir.rest.server.exceptions.InvalidRequestException;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 
 import static org.bahmni.module.immunization.ImmunizationModuleConstants.FHIR_EXT_IMMUNIZATION_ADMINISTERED_PRODUCT;
 import static org.bahmni.module.immunization.ImmunizationModuleConstants.FHIR_EXT_IMMUNIZATION_BASED_ON;
@@ -73,7 +77,7 @@ public class BahmniImmunizationTranslatorImplTest {
 	private ConceptTranslator conceptTranslator;
 
 	@Mock
-	private MedicationQuantityCodingTranslatorImpl quantityCodingTranslator;
+	private CodingTranslator quantityCodingTranslator;
 
 	@Mock
 	private org.openmrs.api.ConceptService conceptService;
@@ -887,6 +891,62 @@ public class BahmniImmunizationTranslatorImplTest {
 		assertNotNull(result.getDoseQuantity());
 		assertEquals(1.0, result.getDoseQuantity().getValue().doubleValue(), 0.001);
 		assertNull(result.getDoseQuantity().getSystem());
+	}
+
+	@Test
+	public void toOpenmrsType_shouldTranslateMultipleBasedOnExtensions() {
+		String orderUuid1 = "order-uuid-1";
+		String orderUuid2 = "order-uuid-2";
+		Order order1 = TestDataFactory.exampleOrder(orderUuid1);
+		Order order2 = TestDataFactory.exampleOrder(orderUuid2);
+		when(orderService.getOrderByUuid(orderUuid1)).thenReturn(order1);
+		when(orderService.getOrderByUuid(orderUuid2)).thenReturn(order2);
+
+		Immunization resource = new Immunization();
+		resource.setStatus(Immunization.ImmunizationStatus.COMPLETED);
+		resource.addExtension(FHIR_EXT_IMMUNIZATION_BASED_ON,
+				new Reference("MedicationRequest/" + orderUuid1));
+		resource.addExtension(FHIR_EXT_IMMUNIZATION_BASED_ON,
+				new Reference("MedicationRequest/" + orderUuid2));
+
+		FhirImmunization result = translator.toOpenmrsType(resource);
+
+		assertEquals(2, result.getBasedOnOrders().size());
+	}
+
+	@Test
+	public void toOpenmrsType_shouldClearExistingBasedOnOrdersOnUpdate() {
+		String oldOrderUuid = "old-order-uuid";
+		String newOrderUuid = "new-order-uuid";
+		Order oldOrder = TestDataFactory.exampleOrder(oldOrderUuid);
+		Order newOrder = TestDataFactory.exampleOrder(newOrderUuid);
+
+		FhirImmunization existing = createBasicImmunization();
+		ImmunizationBasedOn oldBasedOn = new ImmunizationBasedOn();
+		oldBasedOn.setImmunization(existing);
+		oldBasedOn.setOrder(oldOrder);
+		existing.getBasedOnOrders().add(oldBasedOn);
+
+		when(orderService.getOrderByUuid(newOrderUuid)).thenReturn(newOrder);
+
+		Immunization resource = new Immunization();
+		resource.setStatus(Immunization.ImmunizationStatus.COMPLETED);
+		resource.addExtension(FHIR_EXT_IMMUNIZATION_BASED_ON,
+				new Reference("MedicationRequest/" + newOrderUuid));
+
+		FhirImmunization result = translator.toOpenmrsType(existing, resource);
+
+		assertEquals(1, result.getBasedOnOrders().size());
+		assertEquals(newOrder, result.getBasedOnOrders().iterator().next().getOrder());
+	}
+
+	@Test(expected = InvalidRequestException.class)
+	public void toOpenmrsType_shouldThrowWhenNoteHasNoText() {
+		Immunization resource = new Immunization();
+		resource.setStatus(Immunization.ImmunizationStatus.COMPLETED);
+		resource.addNote(new Annotation().setAuthor(new org.hl7.fhir.r4.model.StringType("Author")));
+
+		translator.toOpenmrsType(resource);
 	}
 
 	// ========== Helpers ==========
