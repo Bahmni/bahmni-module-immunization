@@ -62,4 +62,9 @@ public class BahmniImmunizationStatusTranslatorTest {
 	public void toOpenmrsType_shouldReturnNullForNullInput() {
 		assertNull(translator.toOpenmrsType(null));
 	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void toOpenmrsType_shouldThrowForUnmappedFhirStatus() {
+		translator.toOpenmrsType(Immunization.ImmunizationStatus.NULL);
+	}
 }

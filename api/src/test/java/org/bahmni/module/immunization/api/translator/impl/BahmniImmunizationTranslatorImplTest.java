@@ -940,6 +940,94 @@ public class BahmniImmunizationTranslatorImplTest {
 		assertEquals(newOrder, result.getBasedOnOrders().iterator().next().getOrder());
 	}
 
+	@Test
+	public void toOpenmrsType_shouldReturnExistingWhenResourceIsNull() {
+		FhirImmunization existing = createBasicImmunization();
+		existing.setImmunizationId(42);
+
+		FhirImmunization result = translator.toOpenmrsType(existing, null);
+
+		assertEquals(existing, result);
+		assertEquals(Integer.valueOf(42), result.getImmunizationId());
+	}
+
+	@Test
+	public void toFhirResource_shouldTranslateBasedOnOrders() {
+		FhirImmunization entity = createBasicImmunization();
+		Order order1 = TestDataFactory.exampleOrder("order-uuid-1");
+		Order order2 = TestDataFactory.exampleOrder("order-uuid-2");
+
+		ImmunizationBasedOn basedOn1 = new ImmunizationBasedOn();
+		basedOn1.setImmunization(entity);
+		basedOn1.setOrder(order1);
+
+		ImmunizationBasedOn basedOn2 = new ImmunizationBasedOn();
+		basedOn2.setImmunization(entity);
+		basedOn2.setOrder(order2);
+
+		entity.getBasedOnOrders().add(basedOn1);
+		entity.getBasedOnOrders().add(basedOn2);
+
+		Immunization result = translator.toFhirResource(entity);
+
+		List<Extension> extensions = result.getExtensionsByUrl(FHIR_EXT_IMMUNIZATION_BASED_ON);
+		assertEquals(2, extensions.size());
+	}
+
+	@Test
+	public void toOpenmrsType_shouldTranslateNoteWithAuthorReference() {
+		Immunization resource = new Immunization();
+		resource.setStatus(Immunization.ImmunizationStatus.COMPLETED);
+		Reference authorRef = new Reference("Practitioner/" + PERFORMER_UUID);
+		authorRef.setDisplay("Aisha Khan");
+		Annotation note = new Annotation();
+		note.setText("Test note");
+		note.setAuthor(authorRef);
+		resource.addNote(note);
+
+		Provider provider = TestDataFactory.exampleProvider("Aisha Khan", PERFORMER_UUID);
+		when(practitionerReferenceTranslator.toOpenmrsType(any(Reference.class))).thenReturn(provider);
+
+		FhirImmunization result = translator.toOpenmrsType(resource);
+
+		assertEquals(1, result.getNotes().size());
+		ImmunizationNote resultNote = result.getNotes().iterator().next();
+		assertEquals(provider, resultNote.getAuthor());
+	}
+
+	@Test
+	public void toOpenmrsType_shouldTranslateNoteWithAuthorString() {
+		Immunization resource = new Immunization();
+		resource.setStatus(Immunization.ImmunizationStatus.COMPLETED);
+		Annotation note = new Annotation();
+		note.setText("Test note");
+		note.setAuthor(new org.hl7.fhir.r4.model.StringType("Dr. External"));
+		resource.addNote(note);
+
+		FhirImmunization result = translator.toOpenmrsType(resource);
+
+		assertEquals(1, result.getNotes().size());
+		ImmunizationNote resultNote = result.getNotes().iterator().next();
+		assertEquals("Dr. External", resultNote.getAuthorString());
+	}
+
+	@Test
+	public void toOpenmrsType_shouldTranslateNoteWithRecordedTime() {
+		Immunization resource = new Immunization();
+		resource.setStatus(Immunization.ImmunizationStatus.COMPLETED);
+		Date recordedTime = new Date();
+		Annotation note = new Annotation();
+		note.setText("Test note");
+		note.setTime(recordedTime);
+		resource.addNote(note);
+
+		FhirImmunization result = translator.toOpenmrsType(resource);
+
+		assertEquals(1, result.getNotes().size());
+		ImmunizationNote resultNote = result.getNotes().iterator().next();
+		assertEquals(recordedTime, resultNote.getRecordedOn());
+	}
+
 	@Test(expected = InvalidRequestException.class)
 	public void toOpenmrsType_shouldThrowWhenNoteHasNoText() {
 		Immunization resource = new Immunization();
