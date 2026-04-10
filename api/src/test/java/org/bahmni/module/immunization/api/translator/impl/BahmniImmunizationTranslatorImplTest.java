@@ -3,7 +3,6 @@ package org.bahmni.module.immunization.api.translator.impl;
 import org.bahmni.module.immunization.api.TestDataFactory;
 import org.bahmni.module.immunization.api.model.FhirImmunization;
 import org.bahmni.module.immunization.api.model.FhirImmunizationStatus;
-import org.bahmni.module.immunization.api.model.ImmunizationBasedOn;
 import org.bahmni.module.immunization.api.model.ImmunizationNote;
 import org.bahmni.module.immunization.api.model.ImmunizationPerformer;
 import org.hl7.fhir.r4.model.Coding;
@@ -922,10 +921,7 @@ public class BahmniImmunizationTranslatorImplTest {
 		Order newOrder = TestDataFactory.exampleOrder(newOrderUuid);
 
 		FhirImmunization existing = createBasicImmunization();
-		ImmunizationBasedOn oldBasedOn = new ImmunizationBasedOn();
-		oldBasedOn.setImmunization(existing);
-		oldBasedOn.setOrder(oldOrder);
-		existing.getBasedOnOrders().add(oldBasedOn);
+		existing.getBasedOnOrders().add(oldOrder);
 
 		when(orderService.getOrderByUuid(newOrderUuid)).thenReturn(newOrder);
 
@@ -937,7 +933,7 @@ public class BahmniImmunizationTranslatorImplTest {
 		FhirImmunization result = translator.toOpenmrsType(existing, resource);
 
 		assertEquals(1, result.getBasedOnOrders().size());
-		assertEquals(newOrder, result.getBasedOnOrders().iterator().next().getOrder());
+		assertEquals(newOrder, result.getBasedOnOrders().iterator().next());
 	}
 
 	@Test
@@ -957,16 +953,8 @@ public class BahmniImmunizationTranslatorImplTest {
 		Order order1 = TestDataFactory.exampleOrder("order-uuid-1");
 		Order order2 = TestDataFactory.exampleOrder("order-uuid-2");
 
-		ImmunizationBasedOn basedOn1 = new ImmunizationBasedOn();
-		basedOn1.setImmunization(entity);
-		basedOn1.setOrder(order1);
-
-		ImmunizationBasedOn basedOn2 = new ImmunizationBasedOn();
-		basedOn2.setImmunization(entity);
-		basedOn2.setOrder(order2);
-
-		entity.getBasedOnOrders().add(basedOn1);
-		entity.getBasedOnOrders().add(basedOn2);
+		entity.getBasedOnOrders().add(order1);
+		entity.getBasedOnOrders().add(order2);
 
 		Immunization result = translator.toFhirResource(entity);
 

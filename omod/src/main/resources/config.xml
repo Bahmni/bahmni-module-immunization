@@ -38,7 +38,6 @@
         Immunization.hbm.xml
         ImmunizationPerformer.hbm.xml
         ImmunizationNote.hbm.xml
-        ImmunizationBasedOn.hbm.xml
     </mappingFiles>
 
     <databaseChangelogFile>liquibase.xml</databaseChangelogFile>

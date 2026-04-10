@@ -3,7 +3,6 @@ package org.bahmni.module.immunization.api.translator.impl;
 import lombok.AllArgsConstructor;
 import org.bahmni.module.immunization.api.model.FhirImmunization;
 import org.bahmni.module.immunization.api.model.ImmunizationNote;
-import org.bahmni.module.immunization.api.model.ImmunizationBasedOn;
 import org.bahmni.module.immunization.api.model.ImmunizationPerformer;
 import org.bahmni.module.immunization.api.translator.BahmniImmunizationTranslator;
 import org.hl7.fhir.r4.model.Annotation;
@@ -262,12 +261,10 @@ public class BahmniImmunizationTranslatorImpl implements BahmniImmunizationTrans
 	}
 
 	private void translateBasedOnToFhir(FhirImmunization entity, Immunization immunization) {
-		for (ImmunizationBasedOn basedOn : entity.getBasedOnOrders()) {
-			if (basedOn.getOrder() != null) {
-				Reference orderRef = new Reference();
-				orderRef.setReference(MEDICATION_REQUEST_REFERENCE_PREFIX + basedOn.getOrder().getUuid());
-				immunization.addExtension(FHIR_EXT_IMMUNIZATION_BASED_ON, orderRef);
-			}
+		for (Order order : entity.getBasedOnOrders()) {
+			Reference orderRef = new Reference();
+			orderRef.setReference(MEDICATION_REQUEST_REFERENCE_PREFIX + order.getUuid());
+			immunization.addExtension(FHIR_EXT_IMMUNIZATION_BASED_ON, orderRef);
 		}
 	}
 
@@ -332,10 +329,7 @@ public class BahmniImmunizationTranslatorImpl implements BahmniImmunizationTrans
 					if (order == null) {
 						throw new InvalidRequestException("Could not find order with UUID: " + orderUuid);
 					}
-					ImmunizationBasedOn basedOn = new ImmunizationBasedOn();
-					basedOn.setImmunization(existing);
-					basedOn.setOrder(order);
-					existing.getBasedOnOrders().add(basedOn);
+					existing.getBasedOnOrders().add(order);
 				}
 			}
 		}

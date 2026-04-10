@@ -10,6 +10,7 @@ import org.openmrs.Concept;
 import org.openmrs.Drug;
 import org.openmrs.Encounter;
 import org.openmrs.Location;
+import org.openmrs.Order;
 import org.openmrs.Patient;
 
 import java.util.Date;
@@ -71,7 +72,7 @@ public class FhirImmunization extends BaseOpenmrsData {
 
 	private Set<ImmunizationNote> notes = new HashSet<>();
 
-	private Set<ImmunizationBasedOn> basedOnOrders = new HashSet<>();
+	private Set<Order> basedOnOrders = new HashSet<>();
 
 	@Override
 	public Integer getId() {
