@@ -264,6 +264,7 @@ public class BahmniImmunizationTranslatorImpl implements BahmniImmunizationTrans
 		for (Order order : entity.getBasedOnOrders()) {
 			Reference orderRef = new Reference();
 			orderRef.setReference(MEDICATION_REQUEST_REFERENCE_PREFIX + order.getUuid());
+			orderRef.setDisplay(order.getConcept().getName().getName());
 			immunization.addExtension(FHIR_EXT_IMMUNIZATION_BASED_ON, orderRef);
 		}
 	}
