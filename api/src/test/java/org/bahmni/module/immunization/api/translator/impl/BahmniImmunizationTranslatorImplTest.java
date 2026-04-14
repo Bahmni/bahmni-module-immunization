@@ -1026,6 +1026,22 @@ public class BahmniImmunizationTranslatorImplTest {
 	}
 
 	@Test
+	public void toOpenmrsType_shouldClearExistingPerformersWhenUpdateRequestHasNoPerformer() {
+		ImmunizationPerformer existingPerformer = new ImmunizationPerformer();
+		existingPerformer.setFunction("AP");
+
+		FhirImmunization existing = createBasicImmunization();
+		existing.getPerformers().add(existingPerformer);
+
+		Immunization resource = new Immunization();
+		resource.setStatus(Immunization.ImmunizationStatus.COMPLETED);
+
+		FhirImmunization result = translator.toOpenmrsType(existing, resource);
+
+		assertTrue(result.getPerformers().isEmpty());
+	}
+
+	@Test
 	public void toOpenmrsType_shouldClearExistingBasedOnOrdersWhenUpdateRequestHasNoBasedOnExtension() {
 		// existing entity already has an order associated (simulates a previously saved record)
 		String existingOrderUuid = "existing-order-uuid";

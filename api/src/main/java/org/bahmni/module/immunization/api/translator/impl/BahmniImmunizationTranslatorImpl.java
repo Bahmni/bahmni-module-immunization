@@ -387,6 +387,9 @@ public class BahmniImmunizationTranslatorImpl implements BahmniImmunizationTrans
 
 	private void translatePerformersToOpenmrs(FhirImmunization existing, Immunization resource) {
 		if (!resource.hasPerformer()) {
+			if (!existing.getPerformers().isEmpty()) {
+				existing.getPerformers().clear();
+			}
 			return;
 		}
 		existing.getPerformers().clear();
