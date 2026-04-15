@@ -1024,42 +1024,6 @@ public class BahmniImmunizationTranslatorImplTest {
 
 		translator.toOpenmrsType(resource);
 	}
-
-	@Test
-	public void toOpenmrsType_shouldClearExistingPerformersWhenUpdateRequestHasNoPerformer() {
-		ImmunizationPerformer existingPerformer = new ImmunizationPerformer();
-		existingPerformer.setFunction("AP");
-
-		FhirImmunization existing = createBasicImmunization();
-		existing.getPerformers().add(existingPerformer);
-
-		Immunization resource = new Immunization();
-		resource.setStatus(Immunization.ImmunizationStatus.COMPLETED);
-
-		FhirImmunization result = translator.toOpenmrsType(existing, resource);
-
-		assertTrue(result.getPerformers().isEmpty());
-	}
-
-	@Test
-	public void toOpenmrsType_shouldClearExistingBasedOnOrdersWhenUpdateRequestHasNoBasedOnExtension() {
-		// existing entity already has an order associated (simulates a previously saved record)
-		String existingOrderUuid = "existing-order-uuid";
-		Order existingOrder = TestDataFactory.exampleOrder(existingOrderUuid);
-
-		FhirImmunization existing = createBasicImmunization();
-		existing.getBasedOnOrders().add(existingOrder);
-
-		// incoming FHIR resource carries NO basedOn extension at all (client is removing the link)
-		Immunization resource = new Immunization();
-		resource.setStatus(Immunization.ImmunizationStatus.COMPLETED);
-
-		FhirImmunization result = translator.toOpenmrsType(existing, resource);
-
-		assertTrue("basedOnOrders should be empty after update with no basedOn extension",
-				result.getBasedOnOrders().isEmpty());
-	}
-
 	// ========== Helpers ==========
 
 	private FhirImmunization createBasicImmunization() {

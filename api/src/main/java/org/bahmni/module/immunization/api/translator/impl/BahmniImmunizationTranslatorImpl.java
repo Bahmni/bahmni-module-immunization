@@ -318,14 +318,6 @@ public class BahmniImmunizationTranslatorImpl implements BahmniImmunizationTrans
 
 	private void translateBasedOnToDrugOrder(FhirImmunization existing, Immunization resource) {
 		java.util.List<Extension> orderExtensions = resource.getExtensionsByUrl(FHIR_EXT_IMMUNIZATION_BASED_ON);
-		if (orderExtensions.isEmpty()) {
-			// For an update: if the existing record had orders but the incoming
-			// resource carries no basedOn extension, de-associate those orders.
-			if (!existing.getBasedOnOrders().isEmpty()) {
-				existing.getBasedOnOrders().clear();
-			}
-			return;
-		}
 		existing.getBasedOnOrders().clear();
 		for (Extension orderExt : orderExtensions) {
 			if (orderExt.getValue() instanceof Reference) {
@@ -388,12 +380,6 @@ public class BahmniImmunizationTranslatorImpl implements BahmniImmunizationTrans
 	}
 
 	private void translatePerformersToOpenmrs(FhirImmunization existing, Immunization resource) {
-		if (!resource.hasPerformer()) {
-			if (!existing.getPerformers().isEmpty()) {
-				existing.getPerformers().clear();
-			}
-			return;
-		}
 		existing.getPerformers().clear();
 		for (Immunization.ImmunizationPerformerComponent fhirPerformer : resource.getPerformer()) {
 			ImmunizationPerformer performer = new ImmunizationPerformer();
