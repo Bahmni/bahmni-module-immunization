@@ -1,0 +1,37 @@
+{
+  "resourceType": "Immunization",
+  "id": "def-456-uuid",
+  "status": "not-done",
+  "statusReason": {
+    "coding": [{
+      "display": "Patient refused"
+    }]
+  },
+  "vaccineCode": {
+    "coding": [{
+      "display": "Hepatitis B"
+    }]
+  },
+  "patient": {
+    "reference": "Patient/patient-uuid"
+  },
+  "occurrenceDateTime": "2026-03-19",
+  "performer": [
+    {
+      "function": {
+        "coding": [{
+          "system": "http://terminology.hl7.org/CodeSystem/v2-0443",
+          "code": "AP",
+          "display": "Administering Provider"
+        }]
+      },
+      "actor": {
+        "reference": "Practitioner/performer-uuid",
+        "display": "Aisha Khan"
+      }
+    }
+  ],
+  "note": [{
+    "text": "Guardian declined vaccination due to religious beliefs."
+  }]
+}

@@ -1,0 +1,104 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping package="org.bahmni.module.immunization.api.model">
+
+    <class name="org.bahmni.module.immunization.api.model.FhirImmunization" table="immunization">
+        <id name="immunizationId" type="java.lang.Integer" column="immunization_id">
+            <generator class="native">
+                <param name="sequence">immunization_id_seq</param>
+            </generator>
+        </id>
+
+        <property name="status" column="status" length="20" not-null="true">
+            <type name="org.hibernate.type.EnumType">
+                <param name="enumClass">org.bahmni.module.immunization.api.model.FhirImmunizationStatus</param>
+                <param name="useNamed">true</param>
+            </type>
+        </property>
+
+        <many-to-one name="statusReason" class="org.openmrs.Concept"
+                     column="status_reason"/>
+        <many-to-one name="vaccineCode" class="org.openmrs.Concept"
+                     column="vaccine_code" not-null="true"/>
+        <many-to-one name="drug" class="org.openmrs.Drug"
+                     column="drug_id"/>
+        <property name="drugNonCoded" type="java.lang.String"
+                  column="drug_non_coded" length="255"/>
+        <many-to-one name="patient" class="org.openmrs.Patient"
+                     column="patient_id" not-null="true"/>
+        <many-to-one name="encounter" class="org.openmrs.Encounter"
+                     column="encounter_id"/>
+
+        <property name="administeredOn" type="java.util.Date"
+                  column="administered_on" length="19"/>
+        <property name="primarySource" type="java.lang.Boolean"
+                  column="primary_source" not-null="true"/>
+
+        <many-to-one name="location" class="org.openmrs.Location"
+                     column="location_id"/>
+        <property name="locationText" type="java.lang.String"
+                  column="location_text" length="255"/>
+
+        <property name="manufacturer" type="java.lang.String"
+                  column="manufacturer" length="255"/>
+        <property name="batchNumber" type="java.lang.String"
+                  column="batch_number" length="100"/>
+
+        <many-to-one name="site" class="org.openmrs.Concept"
+                     column="site"/>
+        <many-to-one name="route" class="org.openmrs.Concept"
+                     column="route"/>
+
+        <property name="doseQuantity" type="java.lang.Double"
+                  column="dose_quantity"/>
+        <many-to-one name="doseUnit" class="org.openmrs.Concept"
+                     column="dose_unit"/>
+        <property name="doseNumber" type="java.lang.String"
+                  column="dose_number" length="50"/>
+
+        <property name="expirationDate" type="java.util.Date"
+                  column="expiration_date" length="19"/>
+        <property name="isSubpotent" type="java.lang.Boolean"
+                  column="is_subpotent"/>
+        <many-to-one name="subpotentReason" class="org.openmrs.Concept"
+                     column="subpotent_reason"/>
+
+        <property name="uuid" type="java.lang.String" column="uuid"
+                  length="38" unique="true"/>
+        <many-to-one name="creator" class="org.openmrs.User"
+                     not-null="true" column="creator"/>
+        <property name="dateCreated" type="java.util.Date"
+                  column="date_created" not-null="true" length="19"/>
+        <many-to-one name="changedBy" class="org.openmrs.User"
+                     column="changed_by"/>
+        <property name="dateChanged" type="java.util.Date"
+                  column="date_changed" length="19"/>
+        <property name="voided" type="java.lang.Boolean"
+                  column="voided" length="1" not-null="true"/>
+        <many-to-one name="voidedBy" class="org.openmrs.User"
+                     column="voided_by"/>
+        <property name="dateVoided" type="java.util.Date"
+                  column="date_voided" length="19"/>
+        <property name="voidReason" type="java.lang.String"
+                  column="void_reason" length="255"/>
+
+        <set name="performers" cascade="all-delete-orphan" inverse="true">
+            <key column="immunization_id"/>
+            <one-to-many class="org.bahmni.module.immunization.api.model.ImmunizationPerformer"/>
+        </set>
+
+        <set name="notes" cascade="all-delete-orphan" inverse="true">
+            <key column="immunization_id"/>
+            <one-to-many class="org.bahmni.module.immunization.api.model.ImmunizationNote"/>
+        </set>
+
+        <set name="basedOnOrders" table="immunization_based_on" cascade="persist,merge" lazy="true">
+            <key column="immunization_id"/>
+            <many-to-many class="org.openmrs.Order" column="order_id"/>
+        </set>
+    </class>
+
+</hibernate-mapping>
