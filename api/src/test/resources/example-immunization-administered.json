@@ -81,5 +81,8 @@
       "reference": "Medication/drug-uuid",
       "display": "MisoPrime"
     }
+  }, {
+    "url": "http://fhir.bahmni.org/ext/immunization/dispenseLocation",
+    "valueString": "Main Pharmacy"
   }]
 }

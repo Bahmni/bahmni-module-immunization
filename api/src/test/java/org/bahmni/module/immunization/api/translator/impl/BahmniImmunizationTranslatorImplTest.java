@@ -37,6 +37,7 @@ import java.util.List;
 
 import static org.bahmni.module.immunization.ImmunizationModuleConstants.FHIR_EXT_IMMUNIZATION_ADMINISTERED_PRODUCT;
 import static org.bahmni.module.immunization.ImmunizationModuleConstants.FHIR_EXT_IMMUNIZATION_BASED_ON;
+import static org.bahmni.module.immunization.ImmunizationModuleConstants.FHIR_EXT_IMMUNIZATION_DISPENSE_LOCATION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -545,6 +546,29 @@ public class BahmniImmunizationTranslatorImplTest {
 		assertTrue(result.getPerformer().isEmpty());
 	}
 
+	@Test
+	public void toFhirResource_shouldTranslateDispenseLocation() {
+		FhirImmunization entity = createBasicImmunization();
+		entity.setDispenseLocation("Pharmacy A");
+
+		Immunization result = translator.toFhirResource(entity);
+
+		Extension ext = result.getExtensionByUrl(FHIR_EXT_IMMUNIZATION_DISPENSE_LOCATION);
+		assertNotNull(ext);
+		assertEquals("Pharmacy A", ((org.hl7.fhir.r4.model.StringType) ext.getValue()).getValue());
+	}
+
+	@Test
+	public void toFhirResource_shouldNotAddDispenseLocationExtensionWhenNull() {
+		FhirImmunization entity = createBasicImmunization();
+		entity.setDispenseLocation(null);
+
+		Immunization result = translator.toFhirResource(entity);
+
+		Extension ext = result.getExtensionByUrl(FHIR_EXT_IMMUNIZATION_DISPENSE_LOCATION);
+		assertNull(ext);
+	}
+
 	// ========== toOpenmrsType tests ==========
 
 	@Test
@@ -832,6 +856,34 @@ public class BahmniImmunizationTranslatorImplTest {
 		FhirImmunization result = translator.toOpenmrsType(resource);
 
 		assertNotNull(result.getStatusReason());
+	}
+
+	@Test
+	public void toOpenmrsType_shouldTranslateDispenseLocationExtension() {
+		Immunization resource = new Immunization();
+		resource.setStatus(Immunization.ImmunizationStatus.COMPLETED);
+		resource.setPatient(new Reference("Patient/" + PATIENT_UUID));
+		resource.addExtension(FHIR_EXT_IMMUNIZATION_DISPENSE_LOCATION,
+				new org.hl7.fhir.r4.model.StringType("Pharmacy B"));
+
+		setupMocksForAdministeredResource();
+
+		FhirImmunization result = translator.toOpenmrsType(resource);
+
+		assertEquals("Pharmacy B", result.getDispenseLocation());
+	}
+
+	@Test
+	public void toOpenmrsType_shouldHandleMissingDispenseLocationExtension() {
+		Immunization resource = new Immunization();
+		resource.setStatus(Immunization.ImmunizationStatus.COMPLETED);
+		resource.setPatient(new Reference("Patient/" + PATIENT_UUID));
+
+		setupMocksForAdministeredResource();
+
+		FhirImmunization result = translator.toOpenmrsType(resource);
+
+		assertNull(result.getDispenseLocation());
 	}
 
 	// ========== Update (toOpenmrsType with existing) tests ==========

@@ -9,4 +9,6 @@ public class ImmunizationModuleConstants {
 	public static final String FHIR_EXT_IMMUNIZATION_ADMINISTERED_PRODUCT = "http://fhir.bahmni.org/ext/immunization/administeredProduct";
 
 	public static final String FHIR_EXT_IMMUNIZATION_BASED_ON = "http://fhir.bahmni.org/ext/immunization/basedOn";
+
+	public static final String FHIR_EXT_IMMUNIZATION_DISPENSE_LOCATION = "http://fhir.bahmni.org/ext/immunization/dispenseLocation";
 }
