@@ -41,6 +41,8 @@
                      column="location_id"/>
         <property name="locationText" type="java.lang.String"
                   column="location_text" length="255"/>
+        <property name="dispenseLocation" type="java.lang.String"
+                  column="dispense_location" length="255"/>
 
         <property name="manufacturer" type="java.lang.String"
                   column="manufacturer" length="255"/>

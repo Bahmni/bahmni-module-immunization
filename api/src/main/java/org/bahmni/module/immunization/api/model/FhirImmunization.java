@@ -74,6 +74,8 @@ public class FhirImmunization extends BaseOpenmrsData {
 
 	private Set<Order> basedOnOrders = new HashSet<>();
 
+	private String dispenseLocation;
+
 	@Override
 	public Integer getId() {
 		return immunizationId;

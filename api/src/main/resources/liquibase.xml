@@ -242,4 +242,16 @@
         </createIndex>
     </changeSet>
 
+    <changeSet id="add_dispense_location_to_immunization_20260518" author="Srijan, Subhash">
+        <preConditions onFail="MARK_RAN" onError="WARN">
+            <tableExists tableName="immunization"/>
+            <not>
+                <columnExists tableName="immunization" columnName="dispense_location"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="immunization">
+            <column name="dispense_location" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>
