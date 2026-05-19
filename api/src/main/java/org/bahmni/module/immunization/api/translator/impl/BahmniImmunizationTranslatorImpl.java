@@ -34,7 +34,7 @@ import java.math.BigDecimal;
 
 import static org.bahmni.module.immunization.ImmunizationModuleConstants.FHIR_EXT_IMMUNIZATION_ADMINISTERED_PRODUCT;
 import static org.bahmni.module.immunization.ImmunizationModuleConstants.FHIR_EXT_IMMUNIZATION_BASED_ON;
-import static org.bahmni.module.immunization.ImmunizationModuleConstants.FHIR_EXT_IMMUNIZATION_DISPENSE_LOCATION;
+import static org.bahmni.module.immunization.ImmunizationModuleConstants.FHIR_EXT_IMMUNIZATION_STOCK_LOCATION;
 
 @Component
 @AllArgsConstructor
@@ -127,7 +127,7 @@ public class BahmniImmunizationTranslatorImpl implements BahmniImmunizationTrans
 		translateNotesToFhir(entity, immunization);
 		translateDrugExtensionToFhir(entity, immunization);
 		translateBasedOnToFhir(entity, immunization);
-		translateDispenseLocationToFhir(entity, immunization);
+		translateStockLocationToFhir(entity, immunization);
 
 		return immunization;
 	}
@@ -208,7 +208,7 @@ public class BahmniImmunizationTranslatorImpl implements BahmniImmunizationTrans
 		translateNotesToOpenmrs(existing, resource);
 		translateDrugExtensionToDrug(existing, resource);
 		translateBasedOnToDrugOrder(existing, resource);
-		translateDispenseLocationToOpenmrs(existing, resource);
+		translateStockLocationToOpenmrs(existing, resource);
 
 		return existing;
 	}
@@ -428,17 +428,17 @@ public class BahmniImmunizationTranslatorImpl implements BahmniImmunizationTrans
 		}
 	}
 
-	private void translateDispenseLocationToFhir(FhirImmunization entity, Immunization immunization) {
-		if (entity.getDispenseLocation() != null) {
-			immunization.addExtension(FHIR_EXT_IMMUNIZATION_DISPENSE_LOCATION, 
-				new StringType(entity.getDispenseLocation()));
+	private void translateStockLocationToFhir(FhirImmunization entity, Immunization immunization) {
+		if (entity.getStockLocation() != null) {
+			immunization.addExtension(FHIR_EXT_IMMUNIZATION_STOCK_LOCATION, 
+				new StringType(entity.getStockLocation()));
 		}
 	}
 
-	private void translateDispenseLocationToOpenmrs(FhirImmunization existing, Immunization resource) {
-		Extension dispenseLocationExt = resource.getExtensionByUrl(FHIR_EXT_IMMUNIZATION_DISPENSE_LOCATION);
-		if (dispenseLocationExt != null && dispenseLocationExt.getValue() instanceof StringType) {
-			existing.setDispenseLocation(((StringType) dispenseLocationExt.getValue()).getValue());
+	private void translateStockLocationToOpenmrs(FhirImmunization existing, Immunization resource) {
+		Extension stockLocationExt = resource.getExtensionByUrl(FHIR_EXT_IMMUNIZATION_STOCK_LOCATION);
+		if (stockLocationExt != null && stockLocationExt.getValue() instanceof StringType) {
+			existing.setStockLocation(((StringType) stockLocationExt.getValue()).getValue());
 		}
 	}
 }

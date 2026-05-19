@@ -10,5 +10,5 @@ public class ImmunizationModuleConstants {
 
 	public static final String FHIR_EXT_IMMUNIZATION_BASED_ON = "http://fhir.bahmni.org/ext/immunization/basedOn";
 
-	public static final String FHIR_EXT_IMMUNIZATION_DISPENSE_LOCATION = "http://fhir.bahmni.org/ext/immunization/dispenseLocation";
+	public static final String FHIR_EXT_IMMUNIZATION_STOCK_LOCATION = "http://fhir.bahmni.org/ext/immunization/stockLocation";
 }

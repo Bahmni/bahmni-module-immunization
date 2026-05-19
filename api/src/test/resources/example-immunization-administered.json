@@ -82,7 +82,7 @@
       "display": "MisoPrime"
     }
   }, {
-    "url": "http://fhir.bahmni.org/ext/immunization/dispenseLocation",
+    "url": "http://fhir.bahmni.org/ext/immunization/stockLocation",
     "valueString": "Main Pharmacy"
   }]
 }
