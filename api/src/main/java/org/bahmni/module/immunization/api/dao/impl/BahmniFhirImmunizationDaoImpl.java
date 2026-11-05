@@ -100,10 +100,10 @@ public class BahmniFhirImmunizationDaoImpl extends BaseFhirDao<FhirImmunization>
 		}
 	}
 
-	protected <U> void handleVaccineCode(OpenmrsFhirCriteriaContext<FhirImmunization, U> criteriaContext,
+	private <U> void handleVaccineCode(OpenmrsFhirCriteriaContext<FhirImmunization, U> criteriaContext,
 	        TokenAndListParam vaccineCode) {
 		if (vaccineCode != null) {
-			Join<?, ?> vaccineCodeJoin = criteriaContext.addJoin("vaccineCode", "vc");
+			Join<?, ?> vaccineCodeJoin = criteriaContext.getJoin("vc").orElseGet(() -> criteriaContext.addJoin("vaccineCode", "vc"));
 			getSearchQueryHelper()
 					.handleCodeableConcept(criteriaContext, vaccineCode, vaccineCodeJoin, "cm", "crt")
 					.ifPresent(criteriaContext::addPredicate);
