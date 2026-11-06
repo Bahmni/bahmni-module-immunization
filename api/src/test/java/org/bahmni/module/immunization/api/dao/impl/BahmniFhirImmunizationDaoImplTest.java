@@ -49,19 +49,17 @@ public class BahmniFhirImmunizationDaoImplTest extends BaseImmunizationContextSe
 
 	private static final String DATASET = "org/bahmni/module/immunization/api/dao/impl/BahmniFhirImmunizationDaoImplTest_initial_data.xml";
 
-	private static final String IMM_1 = "imm-9001-0000-0000-0000-000000000001"; // P2 COMPLETED   2024-01-10 A
-	private static final String IMM_2 = "imm-9002-0000-0000-0000-000000000002"; // P2 NOT_DONE    2024-03-15 B
-	private static final String IMM_3 = "imm-9003-0000-0000-0000-000000000003"; // P2 COMPLETED   2024-06-20 B
-	private static final String IMM_4 = "imm-9004-0000-0000-0000-000000000004"; // P6 COMPLETED   2024-02-01 A
-	private static final String IMM_5 = "imm-9005-0000-0000-0000-000000000005"; // P6 ERROR       2024-05-05 A
-	private static final String IMM_VOIDED = "imm-9006-0000-0000-0000-000000000006";
+	private static final String IMM_1 = "imm-9001-0000-0000-0000-000000000001";
+	private static final String IMM_2 = "imm-9002-0000-0000-0000-000000000002";
+	private static final String IMM_3 = "imm-9003-0000-0000-0000-000000000003";
+	private static final String IMM_4 = "imm-9004-0000-0000-0000-000000000004";
+	private static final String IMM_5 = "imm-9005-0000-0000-0000-000000000005";
 
 	private static final String PATIENT_2_UUID = "da7f524f-27ce-4bb2-86d6-6d1d05312bd5";
 
 	private static final String PATIENT_6_UUID = "a7e04421-525f-442f-8138-05b619d16def";
 
-	private static final String CODE_SYSTEM = "urn:test:sstrm"; // fhir_concept_source -> "Some Standardized Terminology"
-
+	private static final String CODE_SYSTEM = "urn:test:sstrm";
 	private static final String SNOMED_SYSTEM = "http://snomed.info/sct";
 
 	private static final String VACCINE_A_CODE = "WGT234";
