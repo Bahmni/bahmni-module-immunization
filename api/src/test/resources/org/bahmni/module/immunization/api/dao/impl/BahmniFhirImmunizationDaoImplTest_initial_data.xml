@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+    <fhir_concept_source fhir_concept_source_id="9001" name="Test terminology" url="urn:test:sstrm" concept_source_id="1" creator="1" date_created="2005-01-01 00:00:00.0" retired="0" uuid="fcs-9001-0000-0000-0000-000000000001"/>
+    <fhir_concept_source fhir_concept_source_id="9002" name="SNOMED CT" url="http://snomed.info/sct" concept_source_id="2" creator="1" date_created="2005-01-01 00:00:00.0" retired="0" uuid="fcs-9002-0000-0000-0000-000000000002"/>
+
+    <immunization immunization_id="9001" uuid="imm-9001-0000-0000-0000-000000000001" status="COMPLETED" vaccine_code="5089" patient_id="2" administered_on="2024-01-10 00:00:00.0" primary_source="true" creator="1" date_created="2024-01-10 00:00:00.0" voided="false"/>
+    <immunization immunization_id="9002" uuid="imm-9002-0000-0000-0000-000000000002" status="NOT_DONE" vaccine_code="5497" patient_id="2" administered_on="2024-03-15 00:00:00.0" primary_source="true" creator="1" date_created="2024-03-15 00:00:00.0" voided="false"/>
+    <immunization immunization_id="9003" uuid="imm-9003-0000-0000-0000-000000000003" status="COMPLETED" vaccine_code="5497" patient_id="2" administered_on="2024-06-20 00:00:00.0" primary_source="true" creator="1" date_created="2024-06-20 00:00:00.0" voided="false"/>
+    <immunization immunization_id="9004" uuid="imm-9004-0000-0000-0000-000000000004" status="COMPLETED" vaccine_code="5089" patient_id="6" administered_on="2024-02-01 00:00:00.0" primary_source="true" creator="1" date_created="2024-02-01 00:00:00.0" voided="false"/>
+    <immunization immunization_id="9005" uuid="imm-9005-0000-0000-0000-000000000005" status="ENTERED_IN_ERROR" vaccine_code="5089" patient_id="6" administered_on="2024-05-05 00:00:00.0" primary_source="true" creator="1" date_created="2024-05-05 00:00:00.0" voided="false"/>
+    <immunization immunization_id="9006" uuid="imm-9006-0000-0000-0000-000000000006" status="COMPLETED" vaccine_code="5089" patient_id="2" administered_on="2024-02-02 00:00:00.0" primary_source="true" creator="1" date_created="2024-02-02 00:00:00.0" voided="true" voided_by="1" date_voided="2024-02-03 00:00:00.0" void_reason="entered by mistake"/>
+</dataset>
